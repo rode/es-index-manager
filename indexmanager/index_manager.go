@@ -9,9 +9,9 @@ import (
 	"go.uber.org/zap"
 )
 
-//go:generate counterfeiter -o mocks
+//go:generate counterfeiter -generate
 
-//counterfeiter:generate . IndexManager
+//counterfeiter:generate -o ../mocks . IndexManager
 type IndexManager interface {
 	MappingsRegistry
 	IndexRepository

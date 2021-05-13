@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-//counterfeiter:generate . MappingsRegistry
+//counterfeiter:generate -o ../mocks . MappingsRegistry
 type MappingsRegistry interface {
 	// LoadMappings reads the index mapping and version from JSON file in the directory specified in Config.MappingsPath.
 	LoadMappings() error

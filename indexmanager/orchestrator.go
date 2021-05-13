@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap"
 )
 
-//counterfeiter:generate . MigrationOrchestrator
+//counterfeiter:generate -o ../mocks . MigrationOrchestrator
 type MigrationOrchestrator interface {
 	RunMigrations(ctx context.Context) error
 }

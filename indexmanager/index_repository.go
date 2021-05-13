@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-//counterfeiter:generate . IndexRepository
+//counterfeiter:generate -o ../mocks . IndexRepository
 type IndexRepository interface {
 	// CreateIndex makes a new index using the mappings supplied for the document kind.
 	// If there's an alias specified in metadata, it's added to the index.

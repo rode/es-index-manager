@@ -19,7 +19,7 @@ type migrator struct {
 	repo     IndexRepository
 }
 
-//counterfeiter:generate . Migrator
+//counterfeiter:generate -o ../mocks . Migrator
 type Migrator interface {
 	GetMigrations(ctx context.Context) ([]*Migration, error)
 	Migrate(ctx context.Context, migration *Migration) error
