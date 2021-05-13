@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
-	"os"
-	"path"
 	"path/filepath"
 	"strings"
 )
@@ -25,15 +23,16 @@ type MappingsRegistry interface {
 }
 
 type mappingsRegistry struct {
-	config   *Config
+	config     *Config
 	filesystem fs.FS
-	mappings map[string]*VersionedMapping
+	mappings   map[string]*VersionedMapping
 }
 
 func NewMappingsRegistry(config *Config, filesystem fs.FS) MappingsRegistry {
 	return &mappingsRegistry{
-		config:   config,
-		mappings: make(map[string]*VersionedMapping),
+		config:     config,
+		filesystem: filesystem,
+		mappings:   make(map[string]*VersionedMapping),
 	}
 }
 
@@ -41,12 +40,7 @@ func (mr *mappingsRegistry) LoadMappings() error {
 	mappingsDir := mr.config.MappingsPath
 	files, err := fs.ReadDir(mr.filesystem, mappingsDir)
 	if err != nil {
-		return fmt.Errorf(`error finding mappings in directory "%s": %s`, mappingsDir, err)
-	}
-
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("unable to determine working directory: %s", err)
+		return fmt.Errorf(`error finding mappings in directory: %s`, err)
 	}
 
 	for _, file := range files {
@@ -55,16 +49,15 @@ func (mr *mappingsRegistry) LoadMappings() error {
 		}
 
 		documentKind := strings.TrimSuffix(file.Name(), filepath.Ext(file.Name()))
-		filePath := path.Join(currentDir, mappingsDir, file.Name())
-		versionedMappingJson, err := fs.ReadFile(mr.filesystem, filePath)
+		versionedMappingJson, err := fs.ReadFile(mr.filesystem, filepath.Join(mappingsDir, file.Name()))
 
 		if err != nil {
-			return fmt.Errorf(`error reading file "%s": %s`, filePath, err)
+			return fmt.Errorf(`error reading file: %s`, err)
 		}
 
-		var mapping *VersionedMapping
+		mapping := &VersionedMapping{}
 		if err := json.Unmarshal(versionedMappingJson, mapping); err != nil {
-			return fmt.Errorf(`invalid json in file "%s": %s`, filePath, err)
+			return fmt.Errorf(`invalid json in file "%s": %s`, file.Name(), err)
 		}
 
 		mr.mappings[documentKind] = mapping
@@ -74,7 +67,7 @@ func (mr *mappingsRegistry) LoadMappings() error {
 }
 
 func (mr *mappingsRegistry) IndexName(documentKind, inner string) string {
-	return strings.Join([]string{
+	return nonEmptyJoin([]string{
 		mr.config.IndexPrefix,
 		mr.Version(documentKind),
 		inner,
@@ -83,7 +76,7 @@ func (mr *mappingsRegistry) IndexName(documentKind, inner string) string {
 }
 
 func (mr *mappingsRegistry) AliasName(documentKind, inner string) string {
-	return strings.Join([]string{
+	return nonEmptyJoin([]string{
 		mr.config.IndexPrefix,
 		inner,
 		documentKind,
@@ -106,4 +99,15 @@ func (mr *mappingsRegistry) Mapping(documentKind string) *VersionedMapping {
 	}
 
 	return mapping
+}
+
+func nonEmptyJoin(parts []string, delimiter string) string {
+	var nonEmpty []string
+	for _, str := range parts {
+		if str != "" {
+			nonEmpty = append(nonEmpty, str)
+		}
+	}
+
+	return strings.Join(nonEmpty, delimiter)
 }

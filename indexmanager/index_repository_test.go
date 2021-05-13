@@ -6,7 +6,7 @@ import (
 
 var _ = Describe("IndexRepository", func() {
 	var (
-		//repository indexRepository
+	//repository indexRepository
 	)
 
 	BeforeEach(func() {
