@@ -1,5 +1,6 @@
-.PHONY: test fmtcheck vet fmt mocks coverage
+.PHONY: test fmtcheck vet fmt mocks coverage license
 GOFMT_FILES?=$$(find . -name '*.go')
+MAKEFLAGS+=--silent
 
 fmtcheck:
 	lineCount=$(shell gofmt -l -s $(GOFMT_FILES) | wc -l | tr -d ' ') && exit $$lineCount
@@ -18,3 +19,6 @@ test: fmtcheck vet
 
 coverage: test
 	go tool cover -html=coverage.txt
+
+license:
+	addlicense -c 'The Rode Authors' $(GOFMT_FILES)
