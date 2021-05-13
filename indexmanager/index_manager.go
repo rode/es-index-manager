@@ -3,6 +3,7 @@ package indexmanager
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
@@ -33,7 +34,7 @@ func NewIndexManager(logger *zap.Logger, client *elasticsearch.Client, config *C
 		}
 	}
 
-	registry := NewMappingsRegistry(config)
+	registry := NewMappingsRegistry(config, os.DirFS("."))
 	repo := NewIndexRepository(logger, client, registry)
 	orchestrator := NewMigrationOrchestrator(logger, NewMigrator(logger, client, registry, repo, config))
 	return &indexManager{

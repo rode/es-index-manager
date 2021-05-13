@@ -3,7 +3,7 @@ package indexmanager
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -26,10 +26,11 @@ type MappingsRegistry interface {
 
 type mappingsRegistry struct {
 	config   *Config
+	filesystem fs.FS
 	mappings map[string]*VersionedMapping
 }
 
-func NewMappingsRegistry(config *Config) MappingsRegistry {
+func NewMappingsRegistry(config *Config, filesystem fs.FS) MappingsRegistry {
 	return &mappingsRegistry{
 		config:   config,
 		mappings: make(map[string]*VersionedMapping),
@@ -38,7 +39,7 @@ func NewMappingsRegistry(config *Config) MappingsRegistry {
 
 func (mr *mappingsRegistry) LoadMappings() error {
 	mappingsDir := mr.config.MappingsPath
-	files, err := ioutil.ReadDir(mappingsDir)
+	files, err := fs.ReadDir(mr.filesystem, mappingsDir)
 	if err != nil {
 		return fmt.Errorf(`error finding mappings in directory "%s": %s`, mappingsDir, err)
 	}
@@ -55,7 +56,7 @@ func (mr *mappingsRegistry) LoadMappings() error {
 
 		documentKind := strings.TrimSuffix(file.Name(), filepath.Ext(file.Name()))
 		filePath := path.Join(currentDir, mappingsDir, file.Name())
-		versionedMappingJson, err := ioutil.ReadFile(filePath)
+		versionedMappingJson, err := fs.ReadFile(mr.filesystem, filePath)
 
 		if err != nil {
 			return fmt.Errorf(`error reading file "%s": %s`, filePath, err)
