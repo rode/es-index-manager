@@ -101,7 +101,7 @@ func (ir *indexRepository) CreateIndex(ctx context.Context, indexName, aliasName
 			}
 		}
 
-		return fmt.Errorf("error creating index, status: %d", res.StatusCode)
+		return fmt.Errorf("unexpected status code after creating index: %d", res.StatusCode)
 	}
 
 	log.Info("index created", zap.String("index", indexName))

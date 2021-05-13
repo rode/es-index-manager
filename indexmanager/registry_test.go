@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package indexmanager
+package indexmanager_test
 
 import (
 	"encoding/json"
@@ -23,6 +23,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/rode/es-index-manager/indexmanager"
 )
 
 var _ = Describe("MappingsRegistry", func() {
@@ -57,12 +58,7 @@ var _ = Describe("MappingsRegistry", func() {
 
 		for i := 0; i < len(expectedDocumentKinds); i++ {
 			documentKind := expectedDocumentKinds[i]
-			mapping := &VersionedMapping{
-				Version: fake.Word(),
-				Mappings: map[string]interface{}{
-					fake.Word(): fake.Word(),
-				},
-			}
+			mapping := createRandomMapping()
 
 			if documentKind == randomDocumentKind {
 				expectedMapping = mapping
