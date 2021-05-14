@@ -50,7 +50,7 @@ func NewIndexManager(logger *zap.Logger, client *elasticsearch.Client, config *C
 
 	registry := NewMappingsRegistry(config, os.DirFS("."))
 	repo := NewIndexRepository(logger, client, registry)
-	orchestrator := NewMigrationOrchestrator(logger, NewMigrator(logger, client, registry, repo, config))
+	orchestrator := NewMigrationOrchestrator(logger, NewMigrator(logger, client, registry, repo, time.Sleep, config))
 	return &indexManager{
 		registry,
 		repo,

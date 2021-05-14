@@ -80,9 +80,7 @@ func createRandomMapping() *VersionedMapping {
 }
 
 func createIndexOrAliasName(parts ...string) string {
-	withPrefix := append([]string{"grafeas"}, parts...)
-
-	return strings.Join(withPrefix, "-")
+	return strings.Join(parts, "-")
 }
 
 func createESBody(value interface{}) io.ReadCloser {
@@ -105,4 +103,12 @@ func createEsErrorResponse(errorType string) io.ReadCloser {
 			"type": errorType,
 		},
 	})
+}
+
+func createInvalidBody() io.ReadCloser {
+	return createESBody('{')
+}
+
+func insertResponseAt(allResponses []*http.Response, response *http.Response, index int) []*http.Response {
+	return append(append(allResponses[:index], response), allResponses[index:]...)
 }

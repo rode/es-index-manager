@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
+	. "github.com/rode/es-index-manager/indexmanager/internal"
 	"go.uber.org/zap"
 )
 
@@ -31,6 +32,7 @@ type migrator struct {
 	logger   *zap.Logger
 	registry MappingsRegistry
 	repo     IndexRepository
+	sleep    func(time.Duration)
 }
 
 //counterfeiter:generate -o ../mocks . Migrator
@@ -39,15 +41,12 @@ type Migrator interface {
 	Migrate(ctx context.Context, migration *Migration) error
 }
 
-var (
-	timeSleep = time.Sleep
-)
-
 func NewMigrator(
 	logger *zap.Logger,
 	client *elasticsearch.Client,
 	registry MappingsRegistry,
 	repo IndexRepository,
+	sleep func(time.Duration),
 	config *Config,
 ) Migrator {
 	return &migrator{
@@ -56,16 +55,17 @@ func NewMigrator(
 		logger,
 		registry,
 		repo,
+		sleep,
 	}
 }
 
 func (m *migrator) GetMigrations(ctx context.Context) ([]*Migration, error) {
-	res, err := m.client.Indices.Get([]string{elasticSearchAllIndices}, m.client.Indices.Get.WithContext(ctx))
+	res, err := m.client.Indices.Get([]string{ElasticsearchAllIndices}, m.client.Indices.Get.WithContext(ctx))
 	if err := getErrorFromESResponse(res, err); err != nil {
 		return nil, err
 	}
 
-	allIndices := map[string]esIndex{}
+	allIndices := map[string]EsIndex{}
 
 	if err := decodeResponse(res.Body, &allIndices); err != nil {
 		return nil, err
@@ -124,7 +124,6 @@ func (m *migrator) Migrate(ctx context.Context, migration *Migration) error {
 	}
 
 	log.Info("Deleting source index")
-	// TODO: use repo.DeleteIndex here instead
 	res, err := m.client.Indices.Delete(
 		[]string{migration.SourceIndex},
 		m.client.Indices.Delete.WithContext(ctx),
@@ -148,7 +147,7 @@ func (m *migrator) blockWritesOnIndex(ctx context.Context, log *zap.Logger, inde
 		return fmt.Errorf("error checking if write block is enabled on index: %s", err)
 	}
 
-	settingsResponse := map[string]esSettingsResponse{}
+	settingsResponse := map[string]EsSettingsResponse{}
 	if err := decodeResponse(res.Body, &settingsResponse); err != nil {
 		return fmt.Errorf("error decoding settings response: %s", err)
 	}
@@ -166,7 +165,7 @@ func (m *migrator) blockWritesOnIndex(ctx context.Context, log *zap.Logger, inde
 		return fmt.Errorf("error placing write block on index: %s", err)
 	}
 
-	blockResponse := &esBlockResponse{}
+	blockResponse := &EsBlockResponse{}
 	if err := decodeResponse(res.Body, blockResponse); err != nil {
 		return fmt.Errorf("error decoding write block response: %s", err)
 	}
@@ -180,10 +179,10 @@ func (m *migrator) blockWritesOnIndex(ctx context.Context, log *zap.Logger, inde
 }
 
 func (m *migrator) reindex(ctx context.Context, log *zap.Logger, sourceIndex, targetIndex string) error {
-	reindexReq := &esReindex{
+	reindexReq := &EsReindex{
 		Conflicts:   "proceed",
-		Source:      &esReindexFields{Index: sourceIndex},
-		Destination: &esReindexFields{Index: targetIndex, OpType: "create"},
+		Source:      &EsReindexFields{Index: sourceIndex},
+		Destination: &EsReindexFields{Index: targetIndex, OpType: "create"},
 	}
 	reindexBody, _ := encodeRequest(reindexReq)
 	log.Info("Starting reindex")
@@ -194,7 +193,7 @@ func (m *migrator) reindex(ctx context.Context, log *zap.Logger, sourceIndex, ta
 	if err := getErrorFromESResponse(res, err); err != nil {
 		return fmt.Errorf("error initiating reindex: %s", err)
 	}
-	taskCreationResponse := &esTaskCreationResponse{}
+	taskCreationResponse := &EsTaskCreationResponse{}
 
 	if err := decodeResponse(res.Body, taskCreationResponse); err != nil {
 		return fmt.Errorf("error decoding reindex response: %s", err)
@@ -210,7 +209,7 @@ func (m *migrator) reindex(ctx context.Context, log *zap.Logger, sourceIndex, ta
 			continue
 		}
 
-		task := &esTask{}
+		task := &EsTask{}
 		if err := decodeResponse(res.Body, task); err != nil {
 			log.Warn("error decoding task response", zap.Error(err))
 			continue
@@ -224,14 +223,14 @@ func (m *migrator) reindex(ctx context.Context, log *zap.Logger, sourceIndex, ta
 		}
 
 		log.Info("Task incomplete, waiting before polling again", zap.String("taskId", taskCreationResponse.Task))
-		timeSleep(m.config.Migration.PollInterval)
+		m.sleep(m.config.Migration.PollInterval)
 	}
 
 	if !reindexCompleted {
 		return fmt.Errorf("reindex did not complete after %d polls", m.config.Migration.PollAttempts)
 	}
 
-	res, err = m.client.Delete(elasticsearchTaskIndex, taskCreationResponse.Task, m.client.Delete.WithContext(ctx))
+	res, err = m.client.Delete(ElasticsearchTaskIndex, taskCreationResponse.Task, m.client.Delete.WithContext(ctx))
 	if err := getErrorFromESResponse(res, err); err != nil {
 		log.Warn("Error deleting task document", zap.Error(err), zap.String("taskId", taskCreationResponse.Task))
 	}
@@ -242,16 +241,16 @@ func (m *migrator) reindex(ctx context.Context, log *zap.Logger, sourceIndex, ta
 func (m *migrator) swapAlias(ctx context.Context, log *zap.Logger, alias, sourceIndex, targetIndex string) error {
 	log = log.With(zap.String("alias", alias))
 
-	aliasReq := &esIndexAliasRequest{
-		Actions: []esActions{
+	aliasReq := &EsIndexAliasRequest{
+		Actions: []EsActions{
 			{
-				Remove: &esIndexAlias{
+				Remove: &EsIndexAlias{
 					Index: sourceIndex,
 					Alias: alias,
 				},
 			},
 			{
-				Add: &esIndexAlias{
+				Add: &EsIndexAlias{
 					Index: targetIndex,
 					Alias: alias,
 				},

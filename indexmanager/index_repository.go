@@ -20,6 +20,7 @@ import (
 	"net/http"
 
 	"github.com/elastic/go-elasticsearch/v7"
+	. "github.com/rode/es-index-manager/indexmanager/internal"
 	"go.uber.org/zap"
 )
 
@@ -88,14 +89,14 @@ func (ir *indexRepository) CreateIndex(ctx context.Context, indexName, aliasName
 
 	if res.IsError() {
 		if res.StatusCode == http.StatusBadRequest {
-			errResponse := esErrorResponse{}
+			errResponse := EsErrorResponse{}
 			if err := decodeResponse(res.Body, &errResponse); err != nil {
 				return fmt.Errorf("error decoding Elasticsearch error response: %s", err)
 			}
 
 			// there's a chance for another instance of the application to try to create the same index (e.g., during migrations)
 			// so treat that differently than an error
-			if errResponse.Error.Type == elasticsearchResourceAlreadyExists {
+			if errResponse.Error.Type == ElasticsearchResourceAlreadyExists {
 				log.Info("index already exists")
 				return nil
 			}
