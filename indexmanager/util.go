@@ -37,7 +37,7 @@ func decodeResponse(r io.ReadCloser, i interface{}) error {
 func encodeRequest(body interface{}) (io.Reader, string) {
 	b, err := json.Marshal(body)
 	if err != nil {
-		// we should know that `body` is a serializable struct before invoking `EncodeRequest`
+		// we should know that `body` is a serializable struct before invoking `encodeRequest`
 		panic(err)
 	}
 
@@ -57,9 +57,8 @@ func getErrorFromESResponse(res *esapi.Response, err error) error {
 
 func parseIndexName(indexName string) *IndexName {
 	// the index name is assumed to match one of the following types
-	// $PREFIX-$VERSION-$DOCUMENT_KIND
-	// $PREFIX-$VERSION-$INNER-$DOCUMENT_KIND
-
+	// indexPrefix-version-documentKind
+	// indexPrefix-version-innerName-documentKind
 	parts := strings.Split(indexName, indexNamePartsDelimiter)
 	documentKind := parts[len(parts)-1]
 	name := &IndexName{
@@ -67,7 +66,6 @@ func parseIndexName(indexName string) *IndexName {
 	}
 
 	name.Version = parts[1]
-	// TODO: length check
 	name.Inner = strings.Join(parts[2:(len(parts)-1)], indexNamePartsDelimiter)
 
 	return name
