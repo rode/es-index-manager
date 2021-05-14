@@ -103,6 +103,12 @@ var _ = Describe("Migrator", func() {
 				},
 			}
 
+			mockRegistry.ParseIndexNameReturns(&IndexName{
+				Inner:        expectedInnerName,
+				DocumentKind: documentKind,
+				Version:      fake.Word(),
+			})
+
 			mockRegistry.VersionReturns(expectedVersion)
 			mockRegistry.AliasNameReturns(expectedAlias)
 			mockRegistry.IndexNameReturns(expectedTargetIndex)
@@ -162,6 +168,12 @@ var _ = Describe("Migrator", func() {
 							},
 						},
 					},
+				})
+
+				mockRegistry.ParseIndexNameReturns(&IndexName{
+					Inner:        expectedInnerName,
+					DocumentKind: documentKind,
+					Version:      expectedVersion,
 				})
 			})
 
