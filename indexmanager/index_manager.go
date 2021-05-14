@@ -31,6 +31,9 @@ type IndexManager interface {
 	MappingsRegistry
 	IndexRepository
 	MigrationOrchestrator
+	// Initialize loads document kind mappings from the path specified in Config.MappingsPath.
+	// Then, using the prefix from Config.IndexPrefix, it finds any indices associated with the application; and, if
+	// necessary, runs a migration to apply schema changes.
 	Initialize(context.Context) error
 }
 

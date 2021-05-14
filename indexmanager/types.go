@@ -28,14 +28,33 @@ type Migration struct {
 }
 
 type MigrationConfig struct {
+	// PollInterval is the time to wait between polls of the reindex task endpoint.
 	PollInterval time.Duration
+	// PollAttempts is the number of times that the IndexManager will fetch the task document
+	// to check if the reindex has finished.
 	PollAttempts int
 }
 
 type Config struct {
-	IndexPrefix  string
+	// IndexPrefix is used when creating index and alias names, and to tell if a particular index is associated with the
+	// application. The IndexManager only operates on indices with this prefix; in addition, any indices must have the
+	// prefix be the value of the _meta.type on the index mapping.
+	IndexPrefix string
+	// MappingsPath should point to a directory containing JSON files that hold the Elasticsearch mappings for a given
+	// document kind. The document kind is assumed to be the name of the file, after removing the extension. The version
+	// and mappings are top level keys:
+	//
+	// {
+	//  "version": "v1alpha1",
+	//  "mappings": {
+	//    "_meta": {
+	//      "type": "myApp"
+	//    }
+	//  }
+	//}
 	MappingsPath string
-	Migration    *MigrationConfig
+	// Migration controls the amount of time the IndexManager will wait for a reindex to complete as part of a migration.
+	Migration *MigrationConfig
 }
 
 type VersionedMapping struct {
