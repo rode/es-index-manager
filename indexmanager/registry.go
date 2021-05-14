@@ -102,13 +102,14 @@ func (mr *mappingsRegistry) ParseIndexName(indexName string) *IndexName {
 		return nil
 	}
 
-	version := mr.Version(documentKind)
-	indexName = strings.TrimPrefix(indexName, version)
+	parts := strings.Split(indexName, indexNamePartsDelimiter)
+	version := parts[0]
+	inner := strings.Join(parts[1:], indexNamePartsDelimiter)
 
 	return &IndexName{
 		DocumentKind: documentKind,
 		Version:      version,
-		Inner:        strings.TrimPrefix(indexName, indexNamePartsDelimiter),
+		Inner:        inner,
 	}
 }
 

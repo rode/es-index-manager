@@ -280,7 +280,7 @@ var _ = Describe("MappingsRegistry", func() {
 				indexName = "rode-v1alpha1-policies"
 
 				testFs[filepath.Join(config.MappingsPath, "policies.json")] = mappingsFile(&VersionedMapping{
-					Version:  "v1alpha1",
+					Version:  fake.Word(),
 					Mappings: map[string]interface{}{},
 				})
 			})
@@ -298,7 +298,7 @@ var _ = Describe("MappingsRegistry", func() {
 				indexName = "rode-v1alpha1-test-policies"
 
 				testFs[filepath.Join(config.MappingsPath, "policies.json")] = mappingsFile(&VersionedMapping{
-					Version:  "v1alpha1",
+					Version:  fake.Word(),
 					Mappings: map[string]interface{}{},
 				})
 			})
@@ -316,7 +316,7 @@ var _ = Describe("MappingsRegistry", func() {
 				indexName = "rode-v1alpha1-generic-resource"
 
 				testFs[filepath.Join(config.MappingsPath, "generic-resource.json")] = mappingsFile(&VersionedMapping{
-					Version:  "v1alpha1",
+					Version:  fake.Word(),
 					Mappings: map[string]interface{}{},
 				})
 			})
@@ -334,7 +334,7 @@ var _ = Describe("MappingsRegistry", func() {
 				indexName = "rode-v1alpha1-long-inner-name-generic-resource"
 
 				testFs[filepath.Join(config.MappingsPath, "generic-resource.json")] = mappingsFile(&VersionedMapping{
-					Version:  "v1alpha1",
+					Version:  fake.Word(),
 					Mappings: map[string]interface{}{},
 				})
 			})
@@ -344,25 +344,6 @@ var _ = Describe("MappingsRegistry", func() {
 				Expect(actualIndexName.Version).To(Equal("v1alpha1"))
 				Expect(actualIndexName.DocumentKind).To(Equal("generic-resource"))
 				Expect(actualIndexName.Inner).To(Equal("long-inner-name"))
-			})
-		})
-
-		When("the version contains the delimiter", func() {
-			BeforeEach(func() {
-				config.IndexPrefix = "rode"
-				indexName = "rode-v1-alpha1-generic-resource-version"
-
-				testFs[filepath.Join(config.MappingsPath, "generic-resource-version.json")] = mappingsFile(&VersionedMapping{
-					Version:  "v1-alpha1",
-					Mappings: map[string]interface{}{},
-				})
-			})
-
-			It("should be parsed correctly", func() {
-				Expect(actualIndexName).NotTo(BeNil())
-				Expect(actualIndexName.Version).To(Equal("v1-alpha1"))
-				Expect(actualIndexName.DocumentKind).To(Equal("generic-resource-version"))
-				Expect(actualIndexName.Inner).To(BeEmpty())
 			})
 		})
 	})
