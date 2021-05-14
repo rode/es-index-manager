@@ -1,0 +1,10 @@
+project_name: es-index-manager
+builds:
+  - skip: true
+archives:
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
