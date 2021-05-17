@@ -260,6 +260,93 @@ var _ = Describe("MappingsRegistry", func() {
 			})
 		})
 	})
+
+	Context("ParseIndexName", func() {
+		var (
+			indexName       string
+			actualIndexName *IndexName
+		)
+
+		BeforeEach(func() {
+			config.IndexPrefix = "rode"
+		})
+
+		JustBeforeEach(func() {
+			actualIndexName = registry.ParseIndexName(indexName)
+		})
+
+		When("the index does not have inner name", func() {
+			BeforeEach(func() {
+				indexName = "rode-v1alpha1-policies"
+
+				testFs[filepath.Join(config.MappingsPath, "policies.json")] = mappingsFile(&VersionedMapping{
+					Version:  fake.Word(),
+					Mappings: map[string]interface{}{},
+				})
+			})
+
+			It("should be parsed correctly", func() {
+				Expect(actualIndexName).NotTo(BeNil())
+				Expect(actualIndexName.Version).To(Equal("v1alpha1"))
+				Expect(actualIndexName.DocumentKind).To(Equal("policies"))
+				Expect(actualIndexName.Inner).To(BeEmpty())
+			})
+		})
+
+		When("the index has an inner name", func() {
+			BeforeEach(func() {
+				indexName = "rode-v1alpha1-test-policies"
+
+				testFs[filepath.Join(config.MappingsPath, "policies.json")] = mappingsFile(&VersionedMapping{
+					Version:  fake.Word(),
+					Mappings: map[string]interface{}{},
+				})
+			})
+
+			It("should be parsed correctly", func() {
+				Expect(actualIndexName).NotTo(BeNil())
+				Expect(actualIndexName.Version).To(Equal("v1alpha1"))
+				Expect(actualIndexName.DocumentKind).To(Equal("policies"))
+				Expect(actualIndexName.Inner).To(Equal("test"))
+			})
+		})
+
+		When("the document kind contains the delimiter", func() {
+			BeforeEach(func() {
+				indexName = "rode-v1alpha1-generic-resource"
+
+				testFs[filepath.Join(config.MappingsPath, "generic-resource.json")] = mappingsFile(&VersionedMapping{
+					Version:  fake.Word(),
+					Mappings: map[string]interface{}{},
+				})
+			})
+
+			It("should be parsed correctly", func() {
+				Expect(actualIndexName).NotTo(BeNil())
+				Expect(actualIndexName.Version).To(Equal("v1alpha1"))
+				Expect(actualIndexName.DocumentKind).To(Equal("generic-resource"))
+				Expect(actualIndexName.Inner).To(BeEmpty())
+			})
+		})
+
+		When("the inner name contains the delimiter", func() {
+			BeforeEach(func() {
+				indexName = "rode-v1alpha1-long-inner-name-generic-resource"
+
+				testFs[filepath.Join(config.MappingsPath, "generic-resource.json")] = mappingsFile(&VersionedMapping{
+					Version:  fake.Word(),
+					Mappings: map[string]interface{}{},
+				})
+			})
+
+			It("should be parsed correctly", func() {
+				Expect(actualIndexName).NotTo(BeNil())
+				Expect(actualIndexName.Version).To(Equal("v1alpha1"))
+				Expect(actualIndexName.DocumentKind).To(Equal("generic-resource"))
+				Expect(actualIndexName.Inner).To(Equal("long-inner-name"))
+			})
+		})
+	})
 })
 
 func mappingsFile(schema interface{}) *fstest.MapFile {

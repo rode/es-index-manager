@@ -20,7 +20,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 )
@@ -53,20 +52,4 @@ func getErrorFromESResponse(res *esapi.Response, err error) error {
 		return fmt.Errorf("response error from ES: %d", res.StatusCode)
 	}
 	return nil
-}
-
-func parseIndexName(indexName string) *IndexName {
-	// the index name is assumed to match one of the following types
-	// indexPrefix-version-documentKind
-	// indexPrefix-version-innerName-documentKind
-	parts := strings.Split(indexName, indexNamePartsDelimiter)
-	documentKind := parts[len(parts)-1]
-	name := &IndexName{
-		DocumentKind: documentKind,
-	}
-
-	name.Version = parts[1]
-	name.Inner = strings.Join(parts[2:(len(parts)-1)], indexNamePartsDelimiter)
-
-	return name
 }

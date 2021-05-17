@@ -78,7 +78,7 @@ func (m *migrator) GetMigrations(ctx context.Context) ([]*Migration, error) {
 			continue
 		}
 
-		indexParts := parseIndexName(indexName)
+		indexParts := m.registry.ParseIndexName(indexName)
 		currentVersion := m.registry.Version(indexParts.DocumentKind)
 
 		if indexParts.Version == currentVersion {
