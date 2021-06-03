@@ -60,6 +60,7 @@ type Config struct {
 type VersionedMapping struct {
 	Version  string                 `json:"version"`
 	Mappings map[string]interface{} `json:"mappings"`
+	Settings map[string]interface{} `json:"settings"`
 }
 
 type IndexName struct {

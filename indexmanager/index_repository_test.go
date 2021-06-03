@@ -104,6 +104,28 @@ var _ = Describe("IndexRepository", func() {
 					}),
 				}))
 			})
+
+			When("the index mapping includes settings", func() {
+				BeforeEach(func() {
+					expectedMapping.Settings = map[string]interface{}{
+						"foo": "bar",
+					}
+				})
+
+				It("should use the settings in the payload", func() {
+					actualPayload := map[string]interface{}{}
+
+					readRequestBody(mockTransport.receivedHttpRequests[1], &actualPayload)
+
+					Expect(actualPayload).To(MatchAllKeys(Keys{
+						"mappings": Equal(expectedMapping.Mappings),
+						"aliases": MatchAllKeys(Keys{
+							aliasName: BeEmpty(),
+						}),
+						"settings": Equal(expectedMapping.Settings),
+					}))
+				})
+			})
 		})
 
 		When("an unexpected status code while checking if the index exists", func() {
