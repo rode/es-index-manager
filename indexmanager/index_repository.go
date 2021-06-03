@@ -74,6 +74,9 @@ func (ir *indexRepository) CreateIndex(ctx context.Context, indexName, aliasName
 	createIndexReq := map[string]interface{}{
 		"mappings": mapping.Mappings,
 	}
+	if mapping.Settings != nil {
+		createIndexReq["settings"] = mapping.Settings
+	}
 
 	if aliasName != "" {
 		createIndexReq["aliases"] = map[string]interface{}{
