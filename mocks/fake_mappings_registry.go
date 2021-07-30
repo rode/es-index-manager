@@ -53,16 +53,18 @@ type FakeMappingsRegistry struct {
 	mappingReturnsOnCall map[int]struct {
 		result1 *indexmanager.VersionedMapping
 	}
-	ParseIndexNameStub        func(string) *indexmanager.IndexName
+	ParseIndexNameStub        func(string) (*indexmanager.IndexName, bool)
 	parseIndexNameMutex       sync.RWMutex
 	parseIndexNameArgsForCall []struct {
 		arg1 string
 	}
 	parseIndexNameReturns struct {
 		result1 *indexmanager.IndexName
+		result2 bool
 	}
 	parseIndexNameReturnsOnCall map[int]struct {
 		result1 *indexmanager.IndexName
+		result2 bool
 	}
 	VersionStub        func(string) string
 	versionMutex       sync.RWMutex
@@ -317,7 +319,7 @@ func (fake *FakeMappingsRegistry) MappingReturnsOnCall(i int, result1 *indexmana
 	}{result1}
 }
 
-func (fake *FakeMappingsRegistry) ParseIndexName(arg1 string) *indexmanager.IndexName {
+func (fake *FakeMappingsRegistry) ParseIndexName(arg1 string) (*indexmanager.IndexName, bool) {
 	fake.parseIndexNameMutex.Lock()
 	ret, specificReturn := fake.parseIndexNameReturnsOnCall[len(fake.parseIndexNameArgsForCall)]
 	fake.parseIndexNameArgsForCall = append(fake.parseIndexNameArgsForCall, struct {
@@ -331,9 +333,9 @@ func (fake *FakeMappingsRegistry) ParseIndexName(arg1 string) *indexmanager.Inde
 		return stub(arg1)
 	}
 	if specificReturn {
-		return ret.result1
+		return ret.result1, ret.result2
 	}
-	return fakeReturns.result1
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeMappingsRegistry) ParseIndexNameCallCount() int {
@@ -342,7 +344,7 @@ func (fake *FakeMappingsRegistry) ParseIndexNameCallCount() int {
 	return len(fake.parseIndexNameArgsForCall)
 }
 
-func (fake *FakeMappingsRegistry) ParseIndexNameCalls(stub func(string) *indexmanager.IndexName) {
+func (fake *FakeMappingsRegistry) ParseIndexNameCalls(stub func(string) (*indexmanager.IndexName, bool)) {
 	fake.parseIndexNameMutex.Lock()
 	defer fake.parseIndexNameMutex.Unlock()
 	fake.ParseIndexNameStub = stub
@@ -355,27 +357,30 @@ func (fake *FakeMappingsRegistry) ParseIndexNameArgsForCall(i int) string {
 	return argsForCall.arg1
 }
 
-func (fake *FakeMappingsRegistry) ParseIndexNameReturns(result1 *indexmanager.IndexName) {
+func (fake *FakeMappingsRegistry) ParseIndexNameReturns(result1 *indexmanager.IndexName, result2 bool) {
 	fake.parseIndexNameMutex.Lock()
 	defer fake.parseIndexNameMutex.Unlock()
 	fake.ParseIndexNameStub = nil
 	fake.parseIndexNameReturns = struct {
 		result1 *indexmanager.IndexName
-	}{result1}
+		result2 bool
+	}{result1, result2}
 }
 
-func (fake *FakeMappingsRegistry) ParseIndexNameReturnsOnCall(i int, result1 *indexmanager.IndexName) {
+func (fake *FakeMappingsRegistry) ParseIndexNameReturnsOnCall(i int, result1 *indexmanager.IndexName, result2 bool) {
 	fake.parseIndexNameMutex.Lock()
 	defer fake.parseIndexNameMutex.Unlock()
 	fake.ParseIndexNameStub = nil
 	if fake.parseIndexNameReturnsOnCall == nil {
 		fake.parseIndexNameReturnsOnCall = make(map[int]struct {
 			result1 *indexmanager.IndexName
+			result2 bool
 		})
 	}
 	fake.parseIndexNameReturnsOnCall[i] = struct {
 		result1 *indexmanager.IndexName
-	}{result1}
+		result2 bool
+	}{result1, result2}
 }
 
 func (fake *FakeMappingsRegistry) Version(arg1 string) string {

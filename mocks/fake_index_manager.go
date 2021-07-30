@@ -91,16 +91,18 @@ type FakeIndexManager struct {
 	mappingReturnsOnCall map[int]struct {
 		result1 *indexmanager.VersionedMapping
 	}
-	ParseIndexNameStub        func(string) *indexmanager.IndexName
+	ParseIndexNameStub        func(string) (*indexmanager.IndexName, bool)
 	parseIndexNameMutex       sync.RWMutex
 	parseIndexNameArgsForCall []struct {
 		arg1 string
 	}
 	parseIndexNameReturns struct {
 		result1 *indexmanager.IndexName
+		result2 bool
 	}
 	parseIndexNameReturnsOnCall map[int]struct {
 		result1 *indexmanager.IndexName
+		result2 bool
 	}
 	RunMigrationsStub        func(context.Context) error
 	runMigrationsMutex       sync.RWMutex
@@ -553,7 +555,7 @@ func (fake *FakeIndexManager) MappingReturnsOnCall(i int, result1 *indexmanager.
 	}{result1}
 }
 
-func (fake *FakeIndexManager) ParseIndexName(arg1 string) *indexmanager.IndexName {
+func (fake *FakeIndexManager) ParseIndexName(arg1 string) (*indexmanager.IndexName, bool) {
 	fake.parseIndexNameMutex.Lock()
 	ret, specificReturn := fake.parseIndexNameReturnsOnCall[len(fake.parseIndexNameArgsForCall)]
 	fake.parseIndexNameArgsForCall = append(fake.parseIndexNameArgsForCall, struct {
@@ -567,9 +569,9 @@ func (fake *FakeIndexManager) ParseIndexName(arg1 string) *indexmanager.IndexNam
 		return stub(arg1)
 	}
 	if specificReturn {
-		return ret.result1
+		return ret.result1, ret.result2
 	}
-	return fakeReturns.result1
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeIndexManager) ParseIndexNameCallCount() int {
@@ -578,7 +580,7 @@ func (fake *FakeIndexManager) ParseIndexNameCallCount() int {
 	return len(fake.parseIndexNameArgsForCall)
 }
 
-func (fake *FakeIndexManager) ParseIndexNameCalls(stub func(string) *indexmanager.IndexName) {
+func (fake *FakeIndexManager) ParseIndexNameCalls(stub func(string) (*indexmanager.IndexName, bool)) {
 	fake.parseIndexNameMutex.Lock()
 	defer fake.parseIndexNameMutex.Unlock()
 	fake.ParseIndexNameStub = stub
@@ -591,27 +593,30 @@ func (fake *FakeIndexManager) ParseIndexNameArgsForCall(i int) string {
 	return argsForCall.arg1
 }
 
-func (fake *FakeIndexManager) ParseIndexNameReturns(result1 *indexmanager.IndexName) {
+func (fake *FakeIndexManager) ParseIndexNameReturns(result1 *indexmanager.IndexName, result2 bool) {
 	fake.parseIndexNameMutex.Lock()
 	defer fake.parseIndexNameMutex.Unlock()
 	fake.ParseIndexNameStub = nil
 	fake.parseIndexNameReturns = struct {
 		result1 *indexmanager.IndexName
-	}{result1}
+		result2 bool
+	}{result1, result2}
 }
 
-func (fake *FakeIndexManager) ParseIndexNameReturnsOnCall(i int, result1 *indexmanager.IndexName) {
+func (fake *FakeIndexManager) ParseIndexNameReturnsOnCall(i int, result1 *indexmanager.IndexName, result2 bool) {
 	fake.parseIndexNameMutex.Lock()
 	defer fake.parseIndexNameMutex.Unlock()
 	fake.ParseIndexNameStub = nil
 	if fake.parseIndexNameReturnsOnCall == nil {
 		fake.parseIndexNameReturnsOnCall = make(map[int]struct {
 			result1 *indexmanager.IndexName
+			result2 bool
 		})
 	}
 	fake.parseIndexNameReturnsOnCall[i] = struct {
 		result1 *indexmanager.IndexName
-	}{result1}
+		result2 bool
+	}{result1, result2}
 }
 
 func (fake *FakeIndexManager) RunMigrations(arg1 context.Context) error {

@@ -265,6 +265,7 @@ var _ = Describe("MappingsRegistry", func() {
 		var (
 			indexName       string
 			actualIndexName *IndexName
+			actualOk        bool
 		)
 
 		BeforeEach(func() {
@@ -272,7 +273,7 @@ var _ = Describe("MappingsRegistry", func() {
 		})
 
 		JustBeforeEach(func() {
-			actualIndexName = registry.ParseIndexName(indexName)
+			actualIndexName, actualOk = registry.ParseIndexName(indexName)
 		})
 
 		When("the index does not have inner name", func() {
@@ -290,6 +291,7 @@ var _ = Describe("MappingsRegistry", func() {
 				Expect(actualIndexName.Version).To(Equal("v1alpha1"))
 				Expect(actualIndexName.DocumentKind).To(Equal("policies"))
 				Expect(actualIndexName.Inner).To(BeEmpty())
+				Expect(actualOk).To(BeTrue())
 			})
 		})
 
@@ -308,6 +310,7 @@ var _ = Describe("MappingsRegistry", func() {
 				Expect(actualIndexName.Version).To(Equal("v1alpha1"))
 				Expect(actualIndexName.DocumentKind).To(Equal("policies"))
 				Expect(actualIndexName.Inner).To(Equal("test"))
+				Expect(actualOk).To(BeTrue())
 			})
 		})
 
@@ -326,6 +329,7 @@ var _ = Describe("MappingsRegistry", func() {
 				Expect(actualIndexName.Version).To(Equal("v1alpha1"))
 				Expect(actualIndexName.DocumentKind).To(Equal("generic-resource"))
 				Expect(actualIndexName.Inner).To(BeEmpty())
+				Expect(actualOk).To(BeTrue())
 			})
 		})
 
@@ -344,6 +348,18 @@ var _ = Describe("MappingsRegistry", func() {
 				Expect(actualIndexName.Version).To(Equal("v1alpha1"))
 				Expect(actualIndexName.DocumentKind).To(Equal("generic-resource"))
 				Expect(actualIndexName.Inner).To(Equal("long-inner-name"))
+				Expect(actualOk).To(BeTrue())
+			})
+		})
+
+		When("the document kind is unknown", func() {
+			BeforeEach(func() {
+				indexName = "rode-v1alpha1-foo"
+			})
+
+			It("should indicate that the document kind isn't in the registry", func() {
+				Expect(actualIndexName).To(BeNil())
+				Expect(actualOk).To(BeFalse())
 			})
 		})
 	})

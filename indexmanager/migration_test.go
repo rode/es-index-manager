@@ -107,7 +107,7 @@ var _ = Describe("Migrator", func() {
 				Inner:        expectedInnerName,
 				DocumentKind: documentKind,
 				Version:      fake.Word(),
-			})
+			}, true)
 
 			mockRegistry.VersionReturns(expectedVersion)
 			mockRegistry.AliasNameReturns(expectedAlias)
@@ -174,7 +174,7 @@ var _ = Describe("Migrator", func() {
 					Inner:        expectedInnerName,
 					DocumentKind: documentKind,
 					Version:      expectedVersion,
-				})
+				}, true)
 			})
 
 			It("should not return any migrations", func() {
@@ -225,6 +225,17 @@ var _ = Describe("Migrator", func() {
 
 			It("shouldn't find any migrations", func() {
 				Expect(actualMigrations).To(BeEmpty())
+			})
+		})
+
+		When("an index matches the criteria but isn't in the registry", func() {
+			BeforeEach(func() {
+				mockRegistry.ParseIndexNameReturns(nil, false)
+			})
+
+			It("should not return an error", func() {
+				Expect(actualMigrations).To(BeEmpty())
+				Expect(actualError).NotTo(HaveOccurred())
 			})
 		})
 

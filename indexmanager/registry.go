@@ -35,7 +35,8 @@ type MappingsRegistry interface {
 	// Mapping returns the current versioned mapping for the document kind.
 	Mapping(documentKind string) *VersionedMapping
 	// ParseIndexName determines the version, document kind, and inner name of an index.
-	ParseIndexName(indexName string) *IndexName
+	// If the document cannot be determined, false is returned.
+	ParseIndexName(indexName string) (*IndexName, bool)
 }
 
 type mappingsRegistry struct {
@@ -82,7 +83,7 @@ func (mr *mappingsRegistry) LoadMappings() error {
 	return nil
 }
 
-func (mr *mappingsRegistry) ParseIndexName(indexName string) *IndexName {
+func (mr *mappingsRegistry) ParseIndexName(indexName string) (*IndexName, bool) {
 	// the index name is assumed to match one of the following types
 	// the documentKind may contain the delimiter
 	// indexPrefix-version-documentKind
@@ -99,7 +100,7 @@ func (mr *mappingsRegistry) ParseIndexName(indexName string) *IndexName {
 	}
 
 	if documentKind == "" {
-		return nil
+		return nil, false
 	}
 
 	parts := strings.Split(indexName, indexNamePartsDelimiter)
@@ -110,7 +111,7 @@ func (mr *mappingsRegistry) ParseIndexName(indexName string) *IndexName {
 		DocumentKind: documentKind,
 		Version:      version,
 		Inner:        inner,
-	}
+	}, true
 }
 
 func (mr *mappingsRegistry) IndexName(documentKind, inner string) string {

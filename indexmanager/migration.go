@@ -60,6 +60,7 @@ func NewMigrator(
 }
 
 func (m *migrator) GetMigrations(ctx context.Context) ([]*Migration, error) {
+	log := m.logger.Named("GetMigrations")
 	res, err := m.client.Indices.Get([]string{ElasticsearchAllIndices}, m.client.Indices.Get.WithContext(ctx))
 	if err := getErrorFromESResponse(res, err); err != nil {
 		return nil, err
@@ -78,7 +79,12 @@ func (m *migrator) GetMigrations(ctx context.Context) ([]*Migration, error) {
 			continue
 		}
 
-		indexParts := m.registry.ParseIndexName(indexName)
+		indexParts, ok := m.registry.ParseIndexName(indexName)
+		if !ok {
+			log.Warn("Discovered index matching criteria, but wasn't .", zap.String("index", indexName))
+			continue
+		}
+
 		currentVersion := m.registry.Version(indexParts.DocumentKind)
 
 		if indexParts.Version == currentVersion {
