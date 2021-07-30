@@ -81,7 +81,7 @@ func (m *migrator) GetMigrations(ctx context.Context) ([]*Migration, error) {
 
 		indexParts, ok := m.registry.ParseIndexName(indexName)
 		if !ok {
-			log.Warn("Discovered index matching criteria, but wasn't .", zap.String("index", indexName))
+			log.Warn("Discovered index matching criteria, but wasn't able to determine document kind.", zap.String("index", indexName))
 			continue
 		}
 
