@@ -35,6 +35,7 @@ type MappingsRegistry interface {
 	// Mapping returns the current versioned mapping for the document kind.
 	Mapping(documentKind string) *VersionedMapping
 	// ParseIndexName determines the version, document kind, and inner name of an index.
+	// If the document kind cannot be determined, nil is returned
 	ParseIndexName(indexName string) *IndexName
 }
 

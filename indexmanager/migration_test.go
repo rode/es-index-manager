@@ -228,6 +228,17 @@ var _ = Describe("Migrator", func() {
 			})
 		})
 
+		When("an index matches the criteria but isn't in the registry", func() {
+			BeforeEach(func() {
+				mockRegistry.ParseIndexNameReturns(nil)
+			})
+
+			It("should not return an error", func() {
+				Expect(actualMigrations).To(BeEmpty())
+				Expect(actualError).NotTo(HaveOccurred())
+			})
+		})
+
 		When("an error occurs fetching indices", func() {
 			BeforeEach(func() {
 				mockTransport.preparedHttpResponses[0] = &http.Response{

@@ -346,6 +346,16 @@ var _ = Describe("MappingsRegistry", func() {
 				Expect(actualIndexName.Inner).To(Equal("long-inner-name"))
 			})
 		})
+
+		When("the document kind is unknown", func() {
+			BeforeEach(func() {
+				indexName = "rode-v1alpha1-foo"
+			})
+
+			It("should indicate that the document kind isn't in the registry", func() {
+				Expect(actualIndexName).To(BeNil())
+			})
+		})
 	})
 })
 
